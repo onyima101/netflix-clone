@@ -16,6 +16,6 @@ spec:
     spec:
       containers:
       - name: netflix-app
-        image: onyima101/netflix:latest
+        image: onyima101/netflix-clone-pipeline:latest
         ports:
         - containerPort: 80

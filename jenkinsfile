@@ -15,7 +15,7 @@ pipeline {
         GIT_USERNAME = "onyima101"
         GIT_EMAIL = "onyima_101@yahoo.com"
         GIT_REPONAME = "netflix-clone"
-	    JENKINS_API_TOKEN = credentials("JENKINS_API_TOKEN")        
+	    // JENKINS_API_TOKEN = credentials("JENKINS_API_TOKEN")        
     }
     stages {
         stage('clean workspace') {

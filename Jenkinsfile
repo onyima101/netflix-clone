@@ -12,10 +12,7 @@ pipeline {
         DOCKER_PASS = 'dockerhub'
         IMAGE_NAME = "${DOCKER_USER}/${APP_NAME}"
         IMAGE_TAG = "${RELEASE}-${BUILD_NUMBER}"
-        GIT_USERNAME = "onyima101"
-        GIT_EMAIL = "onyima_101@yahoo.com"
-        GIT_REPONAME = "netflix-clone"
-	    // JENKINS_API_TOKEN = credentials("JENKINS_API_TOKEN")        
+	    JENKINS_API_TOKEN = credentials("JENKINS_API_TOKEN")        
     }
     stages {
         stage('clean workspace') {
@@ -75,39 +72,24 @@ pipeline {
                 sh "trivy image ${DOCKER_USER}/${APP_NAME}:${IMAGE_TAG} > trivyimage.txt" 
             }
         }
+        stage ('Cleanup Artifacts') {
+            steps {
+                script {
+                    sh "docker rmi ${IMAGE_NAME}:${IMAGE_TAG}"
+                    sh "docker rmi ${IMAGE_NAME}:latest"
+                }
+            }
+        }
+	    stage("Trigger CD Pipeline") {
+            steps {
+                script {
+                    sh "curl -v -k --user admin:${JENKINS_API_TOKEN} -X POST -H 'cache-control: no-cache' -H 'content-type: application/x-www-form-urlencoded' --data 'IMAGE_TAG=${IMAGE_TAG}' 'ec2-35-172-89-171.compute-1.amazonaws.com:8080/job/netflix-project-CD/buildWithParameters?token=gitops-token'"
+                }
+            }
+        }                 
         stage('Deploy to container'){
             steps{
                 sh 'docker run -d --name netflix -p 8081:80 ${DOCKER_USER}/${APP_NAME}:${IMAGE_TAG}'
-            }
-        }
-        stage("Update the Deployment Tags") {
-            steps {
-                script {
-                    dir('Kubernetes') {
-                        sh """
-                            cat deployment.yml
-                            sed -i 's/${APP_NAME}.*/${APP_NAME}:${IMAGE_TAG}/g' deployment.yml
-                            cat deployment.yml
-                        """
-                    }
-                }
-            }
-        }
-        stage("Push the changed deployment file to GitHub") {
-            steps {
-                script {
-                    dir('Kubernetes') {
-                        sh """
-                            git config --global user.name "${GIT_USERNAME}"
-                            git config --global user.email "${GIT_EMAIL}"
-                            git add deployment.yml
-                            git commit -m "Updated Deployment Manifest"
-                        """
-                        withCredentials([gitUsernamePassword(credentialsId: 'github', gitToolName: 'Default')]) {
-                            sh "git push https://github.com/${GIT_USERNAME}/${GIT_REPONAME} HEAD:main"
-                        }
-                    }    
-                }
             }
         }
     }        

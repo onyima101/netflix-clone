@@ -85,10 +85,26 @@ pipeline {
                     sh "curl -v -k --user admin:${JENKINS_API_TOKEN} -X POST -H 'cache-control: no-cache' -H 'content-type: application/x-www-form-urlencoded' --data 'IMAGE_TAG=${IMAGE_TAG}' 'ec2-35-172-89-171.compute-1.amazonaws.com:8080/job/netflix-project-CD/buildWithParameters?token=gitops-token'"
                 }
             }
-        }                 
+        }
+        stage("Check and Remove Existing Container") {
+            steps {
+                script {
+                    def containerExists = sh(script: "docker ps -a -q -f name=${APP_NAME}", returnStdout: true).trim()
+                    
+                    if (containerExists) {
+                        // Stop the container if it's running
+                        sh "docker stop ${APP_NAME} || true"
+                        
+                        // Remove the container
+                        sh "docker rm ${APP_NAME}"
+                    } else {
+                        echo "Container ${APP_NAME} does not exist."
+                    }
+                }
+            }
+        }                         
         stage('Deploy to container'){
             steps{
-                sh 'docker stop netflix && docker rm -f netflix'
                 sh 'docker run -d --name netflix -p 8081:80 ${DOCKER_USER}/${APP_NAME}:${IMAGE_TAG}'
             }
         }

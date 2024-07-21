@@ -6,6 +6,7 @@ pipeline {
     }
     environment {
         SCANNER_HOME = tool 'sonar-scanner'
+        APP = "netflix"
         APP_NAME = "netflix-clone-pipeline"
         RELEASE = "1.0.0"
         DOCKER_USER = "onyima101"
@@ -90,16 +91,16 @@ pipeline {
         stage("Check and Remove Existing Container") {
             steps {
                 script {
-                    def containerExists = sh(script: "docker ps -a -q -f name=${APP_NAME}", returnStdout: true).trim()
+                    def containerExists = sh(script: "docker ps -a -q -f name=${APP}", returnStdout: true).trim()
                     
                     if (containerExists) {
                         // Stop the container if it's running
-                        sh "docker stop ${APP_NAME} || true"
+                        sh "docker stop ${APP} || true"
                         
                         // Remove the container
-                        sh "docker rm ${APP_NAME}"
+                        sh "docker rm ${APP}"
                     } else {
-                        echo "Container ${APP_NAME} does not exist."
+                        echo "Container ${APP} does not exist."
                     }
                 }
             }

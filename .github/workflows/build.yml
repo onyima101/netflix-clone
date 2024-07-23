@@ -58,4 +58,4 @@ jobs:
       - name: Trivy image scan
         run: trivy image onyima101/netflix-actions:latest
       - name: Run the container netflix-actions
-        run: docker run -d --name netflix-actions -p 8082:80 onyima101/netflix-actions:latest
+        run: docker run -d --name netflix-actions -p 8085:80 onyima101/netflix-actions:latest

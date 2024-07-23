@@ -43,13 +43,3 @@ jobs:
           docker push onyima101/netflix-actions:latest
         env:
           DOCKER_CLI_ACI: 1
-  deploy:
-    needs: build-analyze-scan
-    runs-on: [jenkins-github-actions]
-    steps:
-      - name: Pull the docker image
-        run: docker pull onyima101/netflix-actions:latest
-      - name: Trivy image scan
-        run: trivy image onyima101/netflix-actions:latest
-      - name: Run the container netflix
-        run: docker run -d --name netflix-actions -p 8082:80 onyima101/netflix-actions:latest        

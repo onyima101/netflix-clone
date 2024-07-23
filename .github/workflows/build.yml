@@ -1,4 +1,4 @@
-name: Build
+name: Build,Analyze,scan
 
 on:
   push:
@@ -7,13 +7,16 @@ on:
 
 
 jobs:
-  build:
+  build-analyze-scan:
     name: Build
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout code
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+
+      - name:  Build and analyze with SonarQube   
       - uses: sonarsource/sonarqube-scan-action@master
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -24,6 +27,7 @@ jobs:
       #   timeout-minutes: 5
       #   env:
       #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      
       - name: install trivy
         run: |
           #install trivy
@@ -34,6 +38,7 @@ jobs:
           sudo apt-get install trivy -y
           #command to scan files
           trivy fs .
+          
       - name: Docker build and push
         run: |
           #run commands to build and push docker images
@@ -43,6 +48,7 @@ jobs:
           docker push onyima101/netflix-actions:latest
         env:
           DOCKER_CLI_ACI: 1
+          
   deploy:
     needs: build-analyze-scan
     runs-on: [jenkins-github-actions]

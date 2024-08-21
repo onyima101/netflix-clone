@@ -51,7 +51,7 @@ jobs:
           
   deploy:
     needs: build-analyze-scan
-    runs-on: [jenkins-github-actions]
+    runs-on: [jenkins-sonar]
     steps:
       - name: Pull the docker image
         run: docker pull onyima101/netflix-actions:latest
